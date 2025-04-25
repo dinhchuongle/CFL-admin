@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const sheet = require("../models/google-sheet"); // gọi google-sheet.js
+const { getClasses, addClass, deleteClass } = require("../models/google-sheet"); // gọi google-sheet.js
 
 // 📘 GET - Hiển thị danh sách lớp
 router.get("/", async (req, res) => {
