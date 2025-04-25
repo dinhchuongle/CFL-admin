@@ -51,6 +51,7 @@ async function addClass(cls) {
 }
 
 module.exports = {
+  getClasses,
   addClass,
   updateClass,
   deleteClass // 🔥 Phải có dòng này!
