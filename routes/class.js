@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { getClasses, addClass, deleteClass } = require("../models/google-sheet"); // gọi google-sheet.js
+const { getClasses, addClass, deleteClass } = require("../models/google-sheet"); // ✅ Import đầy đủ 1 lần
 
 // 📘 GET - Hiển thị danh sách lớp
 router.get("/", async (req, res) => {
   try {
-    const classes = await sheet.getClasses();
+    const classes = await getClasses(); // ✅ Gọi đúng getClasses()
     res.render("class_list", { classes });
   } catch (error) {
     console.error(error);
@@ -22,7 +22,7 @@ router.get("/new", (req, res) => {
 router.post("/new", async (req, res) => {
   try {
     const data = req.body;
-    await sheet.addClass({
+    await addClass({
       name: data.name,
       startDate: data.startDate,
       durationWeeks: data.durationWeeks,
@@ -39,21 +39,16 @@ router.post("/new", async (req, res) => {
   }
 });
 
-module.exports = router;
-const { getClasses, addClass, deleteClass } = require("../models/google-sheet");
-
-// Route GET xem danh sách lớp
-router.get("/", async (req, res) => {
-  const classes = await getClasses();
-  res.render("class_list", { classes });
-});
-
-// Route POST xoá lớp
+// 🗑️ POST - Xóa lớp học
 router.post("/delete/:rowIndex", async (req, res) => {
-  const rowIndex = parseInt(req.params.rowIndex);
-  await deleteClass(rowIndex);
-  res.redirect("/class"); // Xoá xong quay về danh sách lớp
+  try {
+    const rowIndex = parseInt(req.params.rowIndex);
+    await deleteClass(rowIndex);
+    res.redirect("/class");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Không thể xóa lớp.");
+  }
 });
 
-module.exports = router;
-
+module.exports = router; // ✅ Chỉ 1 lần export
