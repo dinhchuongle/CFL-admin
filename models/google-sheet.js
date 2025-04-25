@@ -50,7 +50,12 @@ async function addClass(cls) {
   });
 }
 
-module.exports = { getClasses, addClass };
+module.exports = {
+  getClasses,
+  addClass,
+  updateClass,
+  deleteClass // 🔥 Phải có dòng này!
+};
 async function deleteClass(rowIndex) {
   const sheets = await getSheetsClient();
   await sheets.spreadsheets.batchUpdate({
