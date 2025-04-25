@@ -40,3 +40,22 @@ router.post("/new", async (req, res) => {
 });
 
 module.exports = router;
+const express = require("express");
+const router = express.Router();
+const { getClasses, addClass, deleteClass } = require("../models/google-sheet");
+
+// Route GET xem danh sách lớp
+router.get("/", async (req, res) => {
+  const classes = await getClasses();
+  res.render("class_list", { classes });
+});
+
+// Route POST xoá lớp
+router.post("/delete/:rowIndex", async (req, res) => {
+  const rowIndex = parseInt(req.params.rowIndex);
+  await deleteClass(rowIndex);
+  res.redirect("/class"); // Xoá xong quay về danh sách lớp
+});
+
+module.exports = router;
+
