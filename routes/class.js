@@ -40,7 +40,6 @@ router.post("/new", async (req, res) => {
 });
 
 module.exports = router;
-const express = require("express");
 const router = express.Router();
 const { getClasses, addClass, deleteClass } = require("../models/google-sheet");
 
