@@ -5,7 +5,7 @@ const auth = new google.auth.GoogleAuth({
   scopes: ["https://www.googleapis.com/auth/spreadsheets"]
 });
 
-const SPREADSHEET_ID = "ID_SHEET_CUA_BAN"; // dùng chung với Sheet lớp học
+const SPREADSHEET_ID = "1K7S8ZZjsInS6bWxPuUkMxtt-Mnb36A9jJjJTlQIr318"; // dùng chung với Sheet lớp học
 
 async function getSheetsClient() {
   const authClient = await auth.getClient();
