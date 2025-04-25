@@ -1,44 +1,45 @@
+// Import thư viện
 const express = require("express");
 const session = require("express-session");
 const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
-const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
-const classRouter = require("./routes/class");
-app.use("/class", classRouter);
+const path = require("path");
 
+const app = express(); // ✅ Phải khởi tạo app trước!
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-const { users } = require("./models/users");
-
+// Cấu hình view engine EJS
 app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+// Middleware để xử lý dữ liệu form POST
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
-app.use(session({ secret: "secretKey", resave: false, saveUninitialized: false }));
+
+// Middleware để phục vụ file tĩnh (CSS, JS, ảnh nếu có)
+app.use(express.static(path.join(__dirname, "public")));
+
+// Cấu hình session
+app.use(session({
+  secret: "your_secret_key", // 🛡️ Bạn nên đổi secret này khi triển khai thực tế
+  resave: false,
+  saveUninitialized: false
+}));
+
+// Cấu hình Passport.js cho login/logout (nếu có)
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-passport.use(new LocalStrategy((username, password, done) => {
-    const user = users.find(u => u.username === username);
-    if (!user) return done(null, false, { message: "Wrong username" });
-    if (!bcrypt.compareSync(password, user.password)) return done(null, false, { message: "Wrong password" });
-    return done(null, user);
-}));
+// Gọi routes
+const classRouter = require("./routes/class"); // ✅ Route quản lý lớp học
+app.use("/class", classRouter);
 
-passport.serializeUser((user, done) => done(null, user.username));
-passport.deserializeUser((username, done) => {
-    const user = users.find(u => u.username === username);
-    done(null, user);
+// Trang chủ mặc định chuyển về /class
+app.get("/", (req, res) => {
+  res.redirect("/class");
 });
-app.use("/", require("./routes/auth"));
-app.use("/", require("./routes/index"));
-app.use("/admin", require("./routes/admin"));
-app.use("/class", require("./routes/class"));
-app.use("/program", require("./routes/program"));
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
+// Khởi động server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Server is running at http://localhost:${PORT}`);
+});
