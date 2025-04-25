@@ -35,7 +35,7 @@ app.use("/class", classRouter);
 
 // Trang chủ mặc định chuyển về /class
 app.get("/", (req, res) => {
-  res.redirect("/class");
+  res.redirect("/admin");
 });
 
 // Khởi động server
