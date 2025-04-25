@@ -5,15 +5,15 @@ const auth = new google.auth.GoogleAuth({
   scopes: ["https://www.googleapis.com/auth/spreadsheets"]
 });
 
-const SPREADSHEET_ID = "1K7S8ZZjsInS6bWxPuUkMxtt-Mnb36A9jJjJTlQIr318"; // đúng ID Sheet
-const SHEET_NAME = "LopHoc"; // đúng tên Sheet (phải có dấu nháy đơn nếu có dấu cách)
+const SPREADSHEET_ID = "1K7S8ZZjsInS6bWxPuUkMxtt-Mnb36A9jJjJTlQIr318"; 
+const SHEET_NAME = "LopHoc"; 
 
 async function getSheetsClient() {
   const authClient = await auth.getClient();
   return google.sheets({ version: "v4", auth: authClient });
 }
 
-// 📘 READ
+// 📘 READ - Lấy danh sách lớp học
 async function getClasses() {
   const sheets = await getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
@@ -33,7 +33,7 @@ async function getClasses() {
   }));
 }
 
-// 🟢 CREATE
+// 🟢 CREATE - Thêm lớp học
 async function addClass(cls) {
   const sheets = await getSheetsClient();
   await sheets.spreadsheets.values.append({
@@ -50,12 +50,7 @@ async function addClass(cls) {
   });
 }
 
-module.exports = {
-  getClasses,
-  addClass,
-  updateClass,
-  deleteClass // 🔥 Phải có dòng này!
-};
+// 🔴 DELETE - Xoá lớp học theo rowIndex
 async function deleteClass(rowIndex) {
   const sheets = await getSheetsClient();
   await sheets.spreadsheets.batchUpdate({
@@ -64,9 +59,9 @@ async function deleteClass(rowIndex) {
       requests: [{
         deleteDimension: {
           range: {
-            sheetId: 0, // ⚠️ Sheet ID của 'LopHoc', nếu không phải Sheet 0 thì cần sửa
+            sheetId: 0, // ⚠️ Cẩn thận, nếu LopHoc không phải sheetId 0 thì phải chỉnh
             dimension: "ROWS",
-            startIndex: rowIndex + 1,
+            startIndex: rowIndex + 1, 
             endIndex: rowIndex + 2
           }
         }
@@ -75,3 +70,9 @@ async function deleteClass(rowIndex) {
   });
 }
 
+// ✅ EXPORT chuẩn chỉnh
+module.exports = {
+  getClasses,
+  addClass,
+  deleteClass
+};
