@@ -6,7 +6,7 @@ const auth = new google.auth.GoogleAuth({
 });
 
 const SPREADSHEET_ID = "1K7S8ZZjsInS6bWxPuUkMxtt-Mnb36A9jJjJTlQIr318"; // đúng ID Sheet
-const SHEET_NAME = "'Lớp học'"; // đúng tên Sheet (phải có dấu nháy đơn nếu có dấu cách)
+const SHEET_NAME = "LopHoc"; // đúng tên Sheet (phải có dấu nháy đơn nếu có dấu cách)
 
 async function getSheetsClient() {
   const authClient = await auth.getClient();
