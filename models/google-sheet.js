@@ -1,21 +1,19 @@
 const { google } = require("googleapis");
-const path = require("path");
-
-const CREDENTIALS_PATH = path.join(__dirname, "../credentials.json"); // 👈 Nếu credentials để ở gốc project
-const SPREADSHEET_ID = "1K7S8ZZjsInS6bWxPuUkMxtt-Mnb36A9jJjJTlQIr318"; // 👈 Thay đúng ID
-const SHEET_NAME = "LopHoc"; // 👈 Sheet có dấu tiếng Việt cần đặt trong ' '
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: CREDENTIALS_PATH,
+  credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON),
   scopes: ["https://www.googleapis.com/auth/spreadsheets"]
 });
+
+const SPREADSHEET_ID = "1K7S8ZZjsInS6bWxPuUkMxtt-Mnb36A9jJjJTlQIr318"; // đúng ID Sheet
+const SHEET_NAME = "'Lớp học'"; // đúng tên Sheet (phải có dấu nháy đơn nếu có dấu cách)
 
 async function getSheetsClient() {
   const authClient = await auth.getClient();
   return google.sheets({ version: "v4", auth: authClient });
 }
 
-// 📘 READ - Lấy danh sách lớp học
+// 📘 READ
 async function getClasses() {
   const sheets = await getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
@@ -35,7 +33,7 @@ async function getClasses() {
   }));
 }
 
-// 🟢 CREATE - Thêm lớp học
+// 🟢 CREATE
 async function addClass(cls) {
   const sheets = await getSheetsClient();
   await sheets.spreadsheets.values.append({
@@ -52,7 +50,4 @@ async function addClass(cls) {
   });
 }
 
-module.exports = {
-  getClasses,
-  addClass
-};
+module.exports = { getClasses, addClass };
