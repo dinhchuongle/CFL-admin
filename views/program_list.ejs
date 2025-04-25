@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Danh sách chương trình</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <div class="d-flex justify-content-between mb-3">
+      <h3>📖 Chương trình học</h3>
+      <a href="/program/new" class="btn btn-success">+ Thêm chương trình</a>
+    </div>
+    <ul class="list-group shadow-sm">
+      <% programs.forEach(p => { %>
+        <li class="list-group-item">
+          <h5 class="mb-0"><%= p.title %></h5>
+          <small><%= p.sessions %> buổi | Tài liệu: <%= p.material %></small>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+</body>
+</html>

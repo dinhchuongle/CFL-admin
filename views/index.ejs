@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Trang chủ - CFL Vượt bậc cùng VSTEP Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/">🏫 CFL Vượt bậc cùng VSTEP Admin</a>
+      <div class="d-flex">
+        <% if (user) { %>
+          <span class="navbar-text me-3 text-white">Xin chào, <%= user.username %></span>
+          <a class="btn btn-outline-light" href="/admin">Dashboard</a>
+        <% } else { %>
+          <a class="btn btn-outline-light" href="/login">Đăng nhập</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container text-center mt-5">
+    <h1 class="display-5 mb-3">Chào mừng đến với hệ thống quản trị</h1>
+    <p class="lead">Quản lý lớp học, chương trình giảng dạy và giáo viên một cách hiệu quả.</p>
+    <% if (!user) { %>
+      <a href="/login" class="btn btn-primary btn-lg mt-3">🔐 Đăng nhập để bắt đầu</a>
+    <% } else { %>
+      <a href="/admin" class="btn btn-success btn-lg mt-3">🔧 Vào bảng điều khiển</a>
+    <% } %>
+  </div>
+</body>
+</html>
