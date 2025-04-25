@@ -3,22 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <title>Danh sách lớp học</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
   <div class="container py-4">
-    <div class="d-flex justify-content-between mb-3">
-      <h3>📚 Danh sách lớp học</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h3 class="mb-0">📚 Danh sách lớp học</h3>
       <a href="/class/new" class="btn btn-success">+ Thêm lớp</a>
     </div>
-    <ul class="list-group shadow-sm">
-      <% classes.forEach(c => { %>
+
+    <% if (classes.length === 0) { %>
+      <div class="alert alert-info">Chưa có lớp nào được tạo.</div>
+    <% } else { %>
+      <ul class="list-group shadow-sm">
+        <% classes.forEach((c, index) => { 
+            // Tính ngày kết thúc
+            const start = new Date(c.startDate);
+            const end = new Date(start.getTime() + (parseInt(c.durationWeeks) || 0) * 7 * 24 * 60 * 60 * 1000);
+            const endFormatted = end.toISOString().split("T")[0];
+        %>
         <li class="list-group-item">
-          <h5 class="mb-1"><%= c.name %></h5>
-          <small>Bắt đầu: <%= c.startDate %> | GV: <%= c.teacher %> | Chương trình: <%= c.program %></small>
+          <div class="d-flex justify-content-between align-items-start flex-wrap">
+            <div>
+              <h5 class="mb-1"><%= c.name %></h5>
+              <small>
+                🗓️ <b>Bắt đầu:</b> <%= c.startDate %> → <b>Kết thúc:</b> <%= endFormatted %><br>
+                👨‍🏫 <b>Giáo viên:</b> <%= c.teacher %> |
+                📘 <b>Chương trình:</b> <%= c.program %> |
+                📅 <b>TKB:</b> <%= c.schedule %>
+              </small>
+            </div>
+            <div class="mt-2 mt-md-0 text-end">
+              <form action="/class/delete/<%= index %>" method="POST" onsubmit="return confirm('Xác nhận xoá lớp <%= c.name %>?');" style="display: inline;">
+                <button type="submit" class="btn btn-danger btn-sm">Xoá</button>
+              </form>
+              <a href="/class/<%= index %>/schedule" class="btn btn-outline-primary btn-sm ms-2">📅 Xem lịch</a>
+            </div>
+          </div>
         </li>
-      <% }) %>
-    </ul>
+        <% }) %>
+      </ul>
+    <% } %>
   </div>
 </body>
 </html>
+
