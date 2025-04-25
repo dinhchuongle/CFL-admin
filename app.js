@@ -1,52 +1,46 @@
-// Import thư viện
 const express = require("express");
 const session = require("express-session");
 const passport = require("passport");
 const flash = require("connect-flash");
 const path = require("path");
 
-const app = express(); // ✅ Phải khởi tạo app trước!
+require("./passport-config"); // file riêng xử lý passport (bạn đã có hoặc sẽ tạo sau)
 
-// Cấu hình view engine EJS
+const app = express();
+
+// Cấu hình view engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Middleware để xử lý dữ liệu form POST
+// Middleware cơ bản
 app.use(express.urlencoded({ extended: true }));
-
-// Middleware để phục vụ file tĩnh (CSS, JS, ảnh nếu có)
 app.use(express.static(path.join(__dirname, "public")));
+app.use(flash());
 
-// Cấu hình session
 app.use(session({
-  secret: "your_secret_key", // 🛡️ Bạn nên đổi secret này khi triển khai thực tế
+  secret: process.env.SESSION_SECRET || "my_secret_key",
   resave: false,
   saveUninitialized: false
 }));
 
-// Cấu hình Passport.js cho login/logout (nếu có)
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(flash());
 
-// Gọi routes
-const classRouter = require("./routes/class"); // ✅ Route quản lý lớp học
-app.use("/class", classRouter);
+// Routing
+app.use("/", require("./routes/index"));      // mặc định
+app.use("/auth", require("./routes/auth"));   // đăng nhập / đăng xuất
+app.use("/class", ensureAuthenticated, require("./routes/class")); // cần login
+app.use("/admin", ensureAuthenticated, require("./routes/admin")); // cần login
+app.use("/program", ensureAuthenticated, require("./routes/program"));
 
-// Trang chủ mặc định chuyển về /class
-app.get("/", (req, res) => {
-  res.redirect("/admin");
-});
+// Middleware kiểm tra login
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) return next();
+  res.redirect("/auth/login");
+}
 
-// Khởi động server
-const PORT = process.env.PORT || 3000;
+// Server start
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`✅ Server is running at http://localhost:${PORT}`);
 });
-// check login
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated && req.isAuthenticated()) {
-    return next();
-  }
-  res.redirect("/login");
-}
