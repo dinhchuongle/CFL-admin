@@ -51,3 +51,22 @@ async function addClass(cls) {
 }
 
 module.exports = { getClasses, addClass };
+async function deleteClass(rowIndex) {
+  const sheets = await getSheetsClient();
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
+    resource: {
+      requests: [{
+        deleteDimension: {
+          range: {
+            sheetId: 0, // ⚠️ Sheet ID của 'LopHoc', nếu không phải Sheet 0 thì cần sửa
+            dimension: "ROWS",
+            startIndex: rowIndex + 1,
+            endIndex: rowIndex + 2
+          }
+        }
+      }]
+    }
+  });
+}
+
