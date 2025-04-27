@@ -18,7 +18,7 @@ async function getClasses() {
   const sheets = await getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A2:I` // 🔥 Lấy đủ 9 cột (A → I)
+    range: `${SHEET_NAME}!A2:I`
   });
   const rows = res.data.values || [];
   return rows.map(row => ({
@@ -30,8 +30,19 @@ async function getClasses() {
     zoomLink: row[5] || "",
     zaloGroup: row[6] || "",
     program: row[7] || "",
-    teachersPerSession: row[8] || "[]" // 🔥 thêm teachersPerSession
+    teachersPerSession: row[8] || "[]"
   }));
+}
+
+// 📋 READ - Lấy danh sách giáo viên từ Sheet "GV"
+async function getTeachers() {
+  const sheets = await getSheetsClient();
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `GV!A2:A` // Lấy cột A từ dòng 2
+  });
+  const rows = res.data.values || [];
+  return rows.map(row => row[0]).filter(name => name); // Chỉ lấy tên, loại bỏ dòng trống
 }
 
 // 🟢 CREATE - Thêm lớp học mới
@@ -39,7 +50,7 @@ async function addClass(cls) {
   const sheets = await getSheetsClient();
   await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A2:I`, // 🔥 Append đủ 9 cột
+    range: `${SHEET_NAME}!A2:I`,
     valueInputOption: "USER_ENTERED",
     resource: {
       values: [[
@@ -51,7 +62,7 @@ async function addClass(cls) {
         cls.zoomLink,
         cls.zaloGroup,
         cls.program,
-        cls.teachersPerSession // 🔥 thêm teachersPerSession
+        cls.teachersPerSession
       ]]
     }
   });
@@ -60,9 +71,8 @@ async function addClass(cls) {
 // 📝 UPDATE - Cập nhật lớp học theo rowIndex
 async function updateClass(rowIndex, cls) {
   const sheets = await getSheetsClient();
-  const rowNum = rowIndex + 2; // Bắt đầu từ dòng 2 vì dòng 1 là tiêu đề
-
-  const range = `${SHEET_NAME}!A${rowNum}:I${rowNum}`; // Update 9 cột A→I
+  const rowNum = rowIndex + 2; // Vì dòng tiêu đề là dòng 1
+  const range = `${SHEET_NAME}!A${rowNum}:I${rowNum}`;
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
@@ -93,7 +103,7 @@ async function deleteClass(rowIndex) {
       requests: [{
         deleteDimension: {
           range: {
-            sheetId: 0, // ⚠️ SheetId=0 nếu 'LopHoc' là sheet đầu tiên
+            sheetId: 0, // ⚠️ SheetId = 0 nếu "LopHoc" là sheet đầu tiên
             dimension: "ROWS",
             startIndex: rowIndex + 1,
             endIndex: rowIndex + 2
@@ -109,5 +119,6 @@ module.exports = {
   getClasses,
   addClass,
   deleteClass,
-  updateClass // 🔥 Thêm export updateClass
+  updateClass,
+  getTeachers // 🔥 Đã thêm
 };
