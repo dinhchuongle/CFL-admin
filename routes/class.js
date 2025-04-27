@@ -64,21 +64,29 @@ router.get("/:rowIndex/schedule", async (req, res) => {
 
     const cls = classes[rowIndex];
 
-    // Chuẩn bị lịch buổi học
     const scheduleDays = (cls.schedule || "").split(",").map(day => day.trim());
     const startDate = new Date(cls.startDate);
     const totalWeeks = parseInt(cls.durationWeeks) || 0;
     const sessions = [];
 
+    if (!scheduleDays.length || totalWeeks <= 0) {
+      return res.render("class_schedule", { cls, sessions: [] });
+    }
+
     const dayMap = { "T2": 1, "T3": 2, "T4": 3, "T5": 4, "T6": 5, "T7": 6, "CN": 0 };
 
     let current = new Date(startDate);
     let sessionCount = 1;
+    let maxDate = new Date(startDate);
+    maxDate.setDate(maxDate.getDate() + 365); // giới hạn tối đa 1 năm
 
-    while (true) {
+    while (current <= maxDate) {
       if (sessionCount > totalWeeks * scheduleDays.length) break;
 
-      if (scheduleDays.includes(`T${(current.getDay() === 0 ? "CN" : current.getDay())}`)) {
+      const currentDay = current.getDay();
+      const currentDayString = currentDay === 0 ? "CN" : `T${currentDay}`;
+
+      if (scheduleDays.includes(currentDayString)) {
         sessions.push({
           title: `Buổi ${sessionCount} - ${cls.teacher}`,
           date: current.toISOString().split("T")[0]
@@ -95,4 +103,3 @@ router.get("/:rowIndex/schedule", async (req, res) => {
     res.status(500).send("Không thể lấy lịch học lớp.");
   }
 });
-
