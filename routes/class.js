@@ -53,6 +53,10 @@ router.post("/delete/:rowIndex", async (req, res) => {
 
 module.exports = router; // ✅ Chỉ 1 lần export
 // 📅 GET - Hiển thị lịch học từng lớp với Calendar
+const scheduleDays = (cls.schedule || "")
+  .replace(/-/g, ",")
+  .split(",")
+  .map(day => day.trim());
 router.get("/:rowIndex/schedule", async (req, res) => {
   try {
     const rowIndex = parseInt(req.params.rowIndex);
