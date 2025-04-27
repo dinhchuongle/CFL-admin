@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { getClasses, addClass, deleteClass, updateClass } = require("../models/google-sheet"); // 👈 thêm updateClass
+const { getClasses, addClass, deleteClass, updateClass, getTeachers } = require("../models/google-sheet");
 
 // 📘 GET - Hiển thị danh sách lớp
 router.get("/", async (req, res) => {
@@ -14,15 +14,20 @@ router.get("/", async (req, res) => {
 });
 
 // 🖊️ GET - Hiển thị form thêm lớp
-router.get("/new", (req, res) => {
-  res.render("new_class");
+router.get("/new", async (req, res) => {
+  try {
+    const teachers = await getTeachers();
+    res.render("new_class", { teachers });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Không thể lấy danh sách giáo viên.");
+  }
 });
 
 // 🟢 POST - Thêm lớp mới
 router.post("/new", async (req, res) => {
   try {
     const data = req.body;
-
     const teachersPerSession = data.teachersPerSession ? data.teachersPerSession : "[]";
 
     await addClass({
@@ -30,7 +35,7 @@ router.post("/new", async (req, res) => {
       startDate: data.startDate,
       durationWeeks: data.durationWeeks,
       schedule: data.schedule,
-      teacher: "",
+      teacher: "", // Không lưu cố định teacher nữa
       zoomLink: data.zoomLink,
       zaloGroup: data.zaloGroup,
       program: data.program,
@@ -41,6 +46,51 @@ router.post("/new", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Không thể thêm lớp mới.");
+  }
+});
+
+// ✏️ GET - Hiển thị form chỉnh sửa lớp
+router.get("/:rowIndex/edit", async (req, res) => {
+  try {
+    const rowIndex = parseInt(req.params.rowIndex);
+    const classes = await getClasses();
+    const teachers = await getTeachers();
+
+    if (rowIndex < 0 || rowIndex >= classes.length) {
+      return res.status(404).send("Không tìm thấy lớp học.");
+    }
+
+    const cls = classes[rowIndex];
+    res.render("edit_class", { cls, rowIndex, teachers });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Không thể tải thông tin lớp.");
+  }
+});
+
+// 📝 POST - Cập nhật lớp sau khi chỉnh sửa
+router.post("/:rowIndex/edit", async (req, res) => {
+  try {
+    const rowIndex = parseInt(req.params.rowIndex);
+    const data = req.body;
+    const teachersPerSession = data.teachersPerSession ? data.teachersPerSession : "[]";
+
+    await updateClass(rowIndex, {
+      name: data.name,
+      startDate: data.startDate,
+      durationWeeks: data.durationWeeks,
+      schedule: data.schedule,
+      teacher: "", // Không lưu cố định teacher
+      zoomLink: data.zoomLink,
+      zaloGroup: data.zaloGroup,
+      program: data.program,
+      teachersPerSession: teachersPerSession
+    });
+
+    res.redirect("/class");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Không thể cập nhật lớp.");
   }
 });
 
@@ -56,51 +106,6 @@ router.post("/delete/:rowIndex", async (req, res) => {
   }
 });
 
-// 🖋️ GET - Hiển thị form chỉnh sửa lớp
-router.get("/:rowIndex/edit", async (req, res) => {
-  try {
-    const rowIndex = parseInt(req.params.rowIndex);
-    const classes = await getClasses();
-
-    if (rowIndex < 0 || rowIndex >= classes.length) {
-      return res.status(404).send("Không tìm thấy lớp học.");
-    }
-
-    const cls = classes[rowIndex];
-    res.render("edit_class", { cls, rowIndex });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Không thể tải dữ liệu lớp để chỉnh sửa.");
-  }
-});
-
-// 📝 POST - Cập nhật lớp học
-router.post("/:rowIndex/edit", async (req, res) => {
-  try {
-    const rowIndex = parseInt(req.params.rowIndex);
-    const data = req.body;
-
-    const teachersPerSession = data.teachersPerSession ? data.teachersPerSession : "[]";
-
-    await updateClass(rowIndex, {
-      name: data.name,
-      startDate: data.startDate,
-      durationWeeks: data.durationWeeks,
-      schedule: data.schedule,
-      teacher: "",
-      zoomLink: data.zoomLink,
-      zaloGroup: data.zaloGroup,
-      program: data.program,
-      teachersPerSession: teachersPerSession
-    });
-
-    res.redirect("/class");
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Không thể cập nhật lớp học.");
-  }
-});
-
 // 📅 GET - Hiển thị lịch học từng lớp
 router.get("/:rowIndex/schedule", async (req, res) => {
   try {
@@ -113,7 +118,6 @@ router.get("/:rowIndex/schedule", async (req, res) => {
 
     const cls = classes[rowIndex];
 
-    // Parse teachersPerSession từ JSON
     let teachersPerSession = [];
     try {
       teachersPerSession = cls.teachersPerSession ? JSON.parse(cls.teachersPerSession) : [];
