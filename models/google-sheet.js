@@ -57,6 +57,33 @@ async function addClass(cls) {
   });
 }
 
+// 📝 UPDATE - Cập nhật lớp học theo rowIndex
+async function updateClass(rowIndex, cls) {
+  const sheets = await getSheetsClient();
+  const rowNum = rowIndex + 2; // Bắt đầu từ dòng 2 vì dòng 1 là tiêu đề
+
+  const range = `${SHEET_NAME}!A${rowNum}:I${rowNum}`; // Update 9 cột A→I
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: range,
+    valueInputOption: "USER_ENTERED",
+    resource: {
+      values: [[
+        cls.name,
+        cls.startDate,
+        cls.durationWeeks,
+        cls.schedule,
+        cls.teacher,
+        cls.zoomLink,
+        cls.zaloGroup,
+        cls.program,
+        cls.teachersPerSession
+      ]]
+    }
+  });
+}
+
 // 🔴 DELETE - Xoá lớp học theo rowIndex
 async function deleteClass(rowIndex) {
   const sheets = await getSheetsClient();
@@ -81,5 +108,6 @@ async function deleteClass(rowIndex) {
 module.exports = {
   getClasses,
   addClass,
-  deleteClass
+  deleteClass,
+  updateClass // 🔥 Thêm export updateClass
 };
