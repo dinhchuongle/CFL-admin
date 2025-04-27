@@ -52,3 +52,21 @@ router.post("/delete/:rowIndex", async (req, res) => {
 });
 
 module.exports = router; // ✅ Chỉ 1 lần export
+// 📅 GET - Hiển thị lịch học của từng lớp
+router.get("/:rowIndex/schedule", async (req, res) => {
+  try {
+    const rowIndex = parseInt(req.params.rowIndex);
+    const classes = await getClasses();
+    
+    if (rowIndex < 0 || rowIndex >= classes.length) {
+      return res.status(404).send("Không tìm thấy lớp học.");
+    }
+
+    const cls = classes[rowIndex];
+
+    res.render("class_schedule", { cls });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Không thể lấy lịch học lớp.");
+  }
+});
