@@ -52,7 +52,7 @@ router.post("/delete/:rowIndex", async (req, res) => {
 });
 
 module.exports = router; // ✅ Chỉ 1 lần export
-// 📅 GET - Hiển thị lịch học của từng lớp
+// 📅 GET - Hiển thị lịch học từng lớp với Calendar
 router.get("/:rowIndex/schedule", async (req, res) => {
   try {
     const rowIndex = parseInt(req.params.rowIndex);
@@ -64,9 +64,35 @@ router.get("/:rowIndex/schedule", async (req, res) => {
 
     const cls = classes[rowIndex];
 
-    res.render("class_schedule", { cls });
+    // Chuẩn bị lịch buổi học
+    const scheduleDays = (cls.schedule || "").split(",").map(day => day.trim());
+    const startDate = new Date(cls.startDate);
+    const totalWeeks = parseInt(cls.durationWeeks) || 0;
+    const sessions = [];
+
+    const dayMap = { "T2": 1, "T3": 2, "T4": 3, "T5": 4, "T6": 5, "T7": 6, "CN": 0 };
+
+    let current = new Date(startDate);
+    let sessionCount = 1;
+
+    while (true) {
+      if (sessionCount > totalWeeks * scheduleDays.length) break;
+
+      if (scheduleDays.includes(`T${(current.getDay() === 0 ? "CN" : current.getDay())}`)) {
+        sessions.push({
+          title: `Buổi ${sessionCount} - ${cls.teacher}`,
+          date: current.toISOString().split("T")[0]
+        });
+        sessionCount++;
+      }
+
+      current.setDate(current.getDate() + 1);
+    }
+
+    res.render("class_schedule", { cls, sessions });
   } catch (error) {
     console.error(error);
     res.status(500).send("Không thể lấy lịch học lớp.");
   }
 });
+
