@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { getClasses, addClass, deleteClass } = require("../models/google-sheet"); // ✅ Import đầy đủ 1 lần
+const { getClasses, addClass, deleteClass } = require("../models/google-sheet");
 
 // 📘 GET - Hiển thị danh sách lớp
 router.get("/", async (req, res) => {
   try {
-    const classes = await getClasses(); // ✅ Gọi đúng getClasses()
+    const classes = await getClasses();
     res.render("class_list", { classes });
   } catch (error) {
     console.error(error);
@@ -51,25 +51,23 @@ router.post("/delete/:rowIndex", async (req, res) => {
   }
 });
 
-module.exports = router; // ✅ Chỉ 1 lần export
 // 📅 GET - Hiển thị lịch học từng lớp với Calendar
 router.get("/:rowIndex/schedule", async (req, res) => {
   try {
-    
     const rowIndex = parseInt(req.params.rowIndex);
     const classes = await getClasses();
-    
+
     if (rowIndex < 0 || rowIndex >= classes.length) {
       return res.status(404).send("Không tìm thấy lớp học.");
     }
 
     const cls = classes[rowIndex];
-    const scheduleDays = (cls.schedule || "")
-  .replace(/-/g, ",")
-  .split(",")
-  .map(day => day.trim());
 
-    const scheduleDays = (cls.schedule || "").split(",").map(day => day.trim());
+    const scheduleDays = (cls.schedule || "")
+      .replace(/-/g, ",")
+      .split(",")
+      .map(day => day.trim());
+
     const startDate = new Date(cls.startDate);
     const totalWeeks = parseInt(cls.durationWeeks) || 0;
     const sessions = [];
@@ -83,7 +81,7 @@ router.get("/:rowIndex/schedule", async (req, res) => {
     let current = new Date(startDate);
     let sessionCount = 1;
     let maxDate = new Date(startDate);
-    maxDate.setDate(maxDate.getDate() + 365); // giới hạn tối đa 1 năm
+    maxDate.setDate(maxDate.getDate() + 365);
 
     while (current <= maxDate) {
       if (sessionCount > totalWeeks * scheduleDays.length) break;
@@ -108,3 +106,5 @@ router.get("/:rowIndex/schedule", async (req, res) => {
     res.status(500).send("Không thể lấy lịch học lớp.");
   }
 });
+
+module.exports = router; // ✅ CHỈ đặt ở CUỐI FILE!
