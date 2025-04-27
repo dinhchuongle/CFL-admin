@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Chỉnh sửa lớp <%= cls.name %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <a href="/class" class="btn btn-secondary mb-3">← Quay lại danh sách lớp</a>
+
+    <h3 class="mb-4">✏️ Chỉnh sửa lớp: <%= cls.name %></h3>
+
+    <form method="POST" action="/class/<%= rowIndex %>/edit" id="editClassForm">
+      <div class="mb-3">
+        <label class="form-label">Tên lớp</label>
+        <input type="text" class="form-control" name="name" value="<%= cls.name %>" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Ngày khai giảng</label>
+        <input type="date" class="form-control" name="startDate" value="<%= cls.startDate %>" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Số tuần học</label>
+        <input type="number" class="form-control" name="durationWeeks" value="<%= cls.durationWeeks %>" min="1" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Lịch học (ví dụ: T2, T5, T7)</label>
+        <input type="text" class="form-control" name="schedule" id="scheduleInput" value="<%= cls.schedule %>" required>
+      </div>
+
+      <div id="teachersPerSessionFields" class="mb-3">
+        <!-- Các ô chọn giáo viên theo buổi sẽ tự động sinh ra -->
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Link Zoom</label>
+        <input type="url" class="form-control" name="zoomLink" value="<%= cls.zoomLink %>">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Link nhóm Zalo</label>
+        <input type="url" class="form-control" name="zaloGroup" value="<%= cls.zaloGroup %>">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Chương trình học</label>
+        <input type="text" class="form-control" name="program" value="<%= cls.program %>">
+      </div>
+
+      <input type="hidden" name="teachersPerSession" id="teachersPerSession">
+
+      <button type="submit" class="btn btn-primary">Cập nhật lớp</button>
+    </form>
+  </div>
+
+  <script>
+    const teachersList = ["GV A", "GV B", "GV C", "GV D"]; // 👈 Bạn có thể cập nhật danh sách GV tại đây
+    const scheduleInput = document.getElementById("scheduleInput");
+    const teachersPerSessionFields = document.getElementById("teachersPerSessionFields");
+    const teachersPerSessionInput = document.getElementById("teachersPerSession");
+
+    // Parse dữ liệu cũ teachersPerSession (nếu có)
+    let oldTeachersPerSession = [];
+    try {
+      oldTeachersPerSession = <%- cls.teachersPerSession ? cls.teachersPerSession : "[]" %>;
+    } catch (error) {
+      oldTeachersPerSession = [];
+    }
+
+    function renderTeachersSelect() {
+      const days = scheduleInput.value.replace(/-/g, ",").split(",").map(d => d.trim()).filter(Boolean);
+      teachersPerSessionFields.innerHTML = "";
+
+      days.forEach(day => {
+        const div = document.createElement("div");
+        div.className = "mb-2";
+
+        const label = document.createElement("label");
+        label.className = "form-label";
+        label.innerText = `Giáo viên cho ${day}`;
+
+        const select = document.createElement("select");
+        select.className = "form-select teacher-select";
+        select.dataset.day = day;
+
+        teachersList.forEach(teacher => {
+          const option = document.createElement("option");
+          option.value = teacher;
+          option.innerText = teacher;
+          select.appendChild(option);
+        });
+
+        div.appendChild(label);
+        div.appendChild(select);
+        teachersPerSessionFields.appendChild(div);
+
+        // Nếu có dữ liệu cũ, chọn đúng giáo viên cũ
+        const oldTeacher = oldTeachersPerSession.find(t => t.day === day);
+        if (oldTeacher) {
+          select.value = oldTeacher.teacher;
+        }
+      });
+    }
+
+    scheduleInput.addEventListener("blur", renderTeachersSelect);
+
+    document.getElementById("editClassForm").addEventListener("submit", (e) => {
+      const teacherSelects = document.querySelectorAll(".teacher-select");
+      const teachersPerSession = [];
+
+      teacherSelects.forEach(select => {
+        teachersPerSession.push({
+          day: select.dataset.day,
+          teacher: select.value
+        });
+      });
+
+      teachersPerSessionInput.value = JSON.stringify(teachersPerSession);
+    });
+
+    // Render ngay từ đầu
+    renderTeachersSelect();
+  </script>
+</body>
+</html>
