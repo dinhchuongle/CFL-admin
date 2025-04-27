@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <title>Lịch học lớp <%= cls.name %></title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+  <style>
+    #calendar {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body class="bg-light">
   <div class="container py-4">
@@ -12,24 +21,7 @@
     <h3 class="mb-4">📅 Lịch học của lớp: <%= cls.name %></h3>
 
     <% if (sessions.length > 0) { %>
-      <table class="table table-bordered shadow-sm">
-        <thead class="table-light">
-          <tr>
-            <th>Buổi</th>
-            <th>Ngày học</th>
-            <th>Giáo viên</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% sessions.forEach((session, index) => { %>
-            <tr>
-              <td><%= index + 1 %></td>
-              <td><%= session.date %></td>
-              <td><%= session.title.split(" - ")[1] %></td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
+      <div id="calendar"></div>
     <% } else { %>
       <div class="alert alert-warning">
         ⚠️ Lớp này chưa có lịch học.
@@ -48,5 +40,25 @@
       </ul>
     </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const calendarEl = document.getElementById("calendar");
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        locale: "vi", // ngôn ngữ tiếng Việt
+        events: [
+          <% sessions.forEach(session => { %>
+            {
+              title: "<%= session.title %>",
+              start: "<%= session.date %>"
+            },
+          <% }) %>
+        ]
+      });
+      calendar.render();
+    });
+  </script>
 </body>
 </html>
