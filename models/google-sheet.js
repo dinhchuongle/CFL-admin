@@ -18,7 +18,7 @@ async function getClasses() {
   const sheets = await getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A2:H`
+    range: `${SHEET_NAME}!A2:I` // 🔥 Lấy đủ 9 cột (A → I)
   });
   const rows = res.data.values || [];
   return rows.map(row => ({
@@ -29,22 +29,29 @@ async function getClasses() {
     teacher: row[4] || "",
     zoomLink: row[5] || "",
     zaloGroup: row[6] || "",
-    program: row[7] || ""
+    program: row[7] || "",
+    teachersPerSession: row[8] || "[]" // 🔥 thêm teachersPerSession
   }));
 }
 
-// 🟢 CREATE - Thêm lớp học
+// 🟢 CREATE - Thêm lớp học mới
 async function addClass(cls) {
   const sheets = await getSheetsClient();
   await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A2:H`,
+    range: `${SHEET_NAME}!A2:I`, // 🔥 Append đủ 9 cột
     valueInputOption: "USER_ENTERED",
     resource: {
       values: [[
-        cls.name, cls.startDate, cls.durationWeeks,
-        cls.schedule, cls.teacher, cls.zoomLink,
-        cls.zaloGroup, cls.program
+        cls.name,
+        cls.startDate,
+        cls.durationWeeks,
+        cls.schedule,
+        cls.teacher,
+        cls.zoomLink,
+        cls.zaloGroup,
+        cls.program,
+        cls.teachersPerSession // 🔥 thêm teachersPerSession
       ]]
     }
   });
@@ -59,9 +66,9 @@ async function deleteClass(rowIndex) {
       requests: [{
         deleteDimension: {
           range: {
-            sheetId: 0, // ⚠️ Cẩn thận, nếu LopHoc không phải sheetId 0 thì phải chỉnh
+            sheetId: 0, // ⚠️ SheetId=0 nếu 'LopHoc' là sheet đầu tiên
             dimension: "ROWS",
-            startIndex: rowIndex + 1, 
+            startIndex: rowIndex + 1,
             endIndex: rowIndex + 2
           }
         }
@@ -70,7 +77,7 @@ async function deleteClass(rowIndex) {
   });
 }
 
-// ✅ EXPORT chuẩn chỉnh
+// ✅ EXPORT chuẩn
 module.exports = {
   getClasses,
   addClass,
