@@ -39,10 +39,10 @@ async function getTeachers() {
   const sheets = await getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `GV!A2:A` // Lấy cột A từ dòng 2
+    range: `GV!A2:A`
   });
   const rows = res.data.values || [];
-  return rows.map(row => row[0]).filter(name => name); // Chỉ lấy tên, loại bỏ dòng trống
+  return rows.map(row => row[0]).filter(name => name);
 }
 
 // 🟢 CREATE - Thêm lớp học mới
@@ -68,10 +68,10 @@ async function addClass(cls) {
   });
 }
 
-// 📝 UPDATE - Cập nhật lớp học theo rowIndex
+// 📝 UPDATE - Cập nhật lớp học
 async function updateClass(rowIndex, cls) {
   const sheets = await getSheetsClient();
-  const rowNum = rowIndex + 2; // Vì dòng tiêu đề là dòng 1
+  const rowNum = rowIndex + 2;
   const range = `${SHEET_NAME}!A${rowNum}:I${rowNum}`;
 
   await sheets.spreadsheets.values.update({
@@ -94,16 +94,28 @@ async function updateClass(rowIndex, cls) {
   });
 }
 
-// 🔴 DELETE - Xoá lớp học theo rowIndex
+// 🔴 DELETE - Xoá lớp học theo rowIndex (Cập nhật mới)
 async function deleteClass(rowIndex) {
   const sheets = await getSheetsClient();
+
+  // 🔥 Lấy sheetId đúng của sheet "LopHoc"
+  const meta = await sheets.spreadsheets.get({
+    spreadsheetId: SPREADSHEET_ID
+  });
+
+  const sheet = meta.data.sheets.find(s => s.properties.title === SHEET_NAME);
+  if (!sheet) {
+    throw new Error(`Không tìm thấy sheet có tên ${SHEET_NAME}`);
+  }
+  const sheetId = sheet.properties.sheetId;
+
   await sheets.spreadsheets.batchUpdate({
     spreadsheetId: SPREADSHEET_ID,
     resource: {
       requests: [{
         deleteDimension: {
           range: {
-            sheetId: 0, // ⚠️ SheetId = 0 nếu "LopHoc" là sheet đầu tiên
+            sheetId: sheetId, // 🛡️ Không hardcode nữa
             dimension: "ROWS",
             startIndex: rowIndex + 1,
             endIndex: rowIndex + 2
@@ -120,5 +132,5 @@ module.exports = {
   addClass,
   deleteClass,
   updateClass,
-  getTeachers // 🔥 Đã thêm
+  getTeachers
 };
