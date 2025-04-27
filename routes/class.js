@@ -39,7 +39,7 @@ router.post("/new", async (req, res) => {
   }
 });
 
-// 🗑️ POST - Xóa lớp học
+// 🗑️ POST - Xoá lớp học
 router.post("/delete/:rowIndex", async (req, res) => {
   try {
     const rowIndex = parseInt(req.params.rowIndex);
@@ -47,11 +47,11 @@ router.post("/delete/:rowIndex", async (req, res) => {
     res.redirect("/class");
   } catch (error) {
     console.error(error);
-    res.status(500).send("Không thể xóa lớp.");
+    res.status(500).send("Không thể xoá lớp.");
   }
 });
 
-// 📅 GET - Hiển thị lịch học từng lớp với Calendar
+// 📅 GET - Hiển thị lịch học từng lớp
 router.get("/:rowIndex/schedule", async (req, res) => {
   try {
     const rowIndex = parseInt(req.params.rowIndex);
@@ -63,8 +63,9 @@ router.get("/:rowIndex/schedule", async (req, res) => {
 
     const cls = classes[rowIndex];
 
+    // Xử lý lịch học
     const scheduleDays = (cls.schedule || "")
-      .replace(/-/g, ",")
+      .replace(/-/g, ",") // hỗ trợ cả T3-T5-T7 hoặc T3, T5, T7
       .split(",")
       .map(day => day.trim());
 
@@ -76,18 +77,18 @@ router.get("/:rowIndex/schedule", async (req, res) => {
       return res.render("class_schedule", { cls, sessions: [] });
     }
 
-    const dayMap = { "T2": 1, "T3": 2, "T4": 3, "T5": 4, "T6": 5, "T7": 6, "CN": 0 };
+    const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]; // Mapping đúng thứ
 
     let current = new Date(startDate);
     let sessionCount = 1;
     let maxDate = new Date(startDate);
-    maxDate.setDate(maxDate.getDate() + 365);
+    maxDate.setDate(maxDate.getDate() + 365); // Giới hạn tối đa 1 năm
 
     while (current <= maxDate) {
       if (sessionCount > totalWeeks * scheduleDays.length) break;
 
       const currentDay = current.getDay();
-      const currentDayString = currentDay === 0 ? "CN" : `T${currentDay}`;
+      const currentDayString = dayNames[currentDay];
 
       if (scheduleDays.includes(currentDayString)) {
         sessions.push({
@@ -107,4 +108,4 @@ router.get("/:rowIndex/schedule", async (req, res) => {
   }
 });
 
-module.exports = router; // ✅ CHỈ đặt ở CUỐI FILE!
+module.exports = router; // ✅ Chỉ 1 lần export đúng cuối file
