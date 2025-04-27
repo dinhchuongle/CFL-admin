@@ -35,10 +35,11 @@
               </small>
             </div>
             <div class="mt-2 mt-md-0 text-end">
+              <a href="/class/<%= index %>/schedule" class="btn btn-outline-primary btn-sm me-2">📅 Xem lịch</a>
+              <a href="/class/<%= index %>/edit" class="btn btn-outline-warning btn-sm me-2">✏️ Sửa</a> <!-- 👈 Nút Sửa -->
               <form action="/class/delete/<%= index %>" method="POST" onsubmit="return confirm('Xác nhận xoá lớp <%= c.name %>?');" style="display: inline;">
-                <button type="submit" class="btn btn-danger btn-sm">Xoá</button>
+                <button type="submit" class="btn btn-danger btn-sm">🗑️ Xoá</button>
               </form>
-              <a href="/class/<%= index %>/schedule" class="btn btn-outline-primary btn-sm ms-2">📅 Xem lịch</a>
             </div>
           </div>
         </li>
@@ -48,4 +49,3 @@
   </div>
 </body>
 </html>
-
