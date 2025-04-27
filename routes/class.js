@@ -22,16 +22,21 @@ router.get("/new", (req, res) => {
 router.post("/new", async (req, res) => {
   try {
     const data = req.body;
+
+    const teachersPerSession = data.teachersPerSession ? data.teachersPerSession : "[]"; // 👈 Lấy thêm teachersPerSession
+
     await addClass({
       name: data.name,
       startDate: data.startDate,
       durationWeeks: data.durationWeeks,
       schedule: data.schedule,
-      teacher: data.teacher,
+      teacher: "", // Không lưu teacher cố định nữa
       zoomLink: data.zoomLink,
       zaloGroup: data.zaloGroup,
-      program: data.program
+      program: data.program,
+      teachersPerSession: teachersPerSession // 👈 Gửi vào Sheet
     });
+
     res.redirect("/class");
   } catch (error) {
     console.error(error);
@@ -63,9 +68,16 @@ router.get("/:rowIndex/schedule", async (req, res) => {
 
     const cls = classes[rowIndex];
 
-    // Xử lý lịch học
+    // Parse teachersPerSession từ JSON
+    let teachersPerSession = [];
+    try {
+      teachersPerSession = cls.teachersPerSession ? JSON.parse(cls.teachersPerSession) : [];
+    } catch (error) {
+      console.error("Lỗi parse teachersPerSession:", error);
+    }
+
     const scheduleDays = (cls.schedule || "")
-      .replace(/-/g, ",") // hỗ trợ cả T3-T5-T7 hoặc T3, T5, T7
+      .replace(/-/g, ",")
       .split(",")
       .map(day => day.trim());
 
@@ -74,15 +86,15 @@ router.get("/:rowIndex/schedule", async (req, res) => {
     const sessions = [];
 
     if (!scheduleDays.length || totalWeeks <= 0) {
-      return res.render("class_schedule", { cls, sessions: [] });
+      return res.render("class_schedule", { cls, sessions });
     }
 
-    const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]; // Mapping đúng thứ
+    const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 
     let current = new Date(startDate);
     let sessionCount = 1;
     let maxDate = new Date(startDate);
-    maxDate.setDate(maxDate.getDate() + 365); // Giới hạn tối đa 1 năm
+    maxDate.setDate(maxDate.getDate() + 365);
 
     while (current <= maxDate) {
       if (sessionCount > totalWeeks * scheduleDays.length) break;
@@ -91,8 +103,12 @@ router.get("/:rowIndex/schedule", async (req, res) => {
       const currentDayString = dayNames[currentDay];
 
       if (scheduleDays.includes(currentDayString)) {
+        // Xác định giáo viên đúng ngày
+        const teacherObj = teachersPerSession.find(tp => tp.day === currentDayString);
+        const teacherName = teacherObj ? teacherObj.teacher : "Chưa phân công";
+
         sessions.push({
-          title: `Buổi ${sessionCount} - ${cls.teacher}`,
+          title: `Buổi ${sessionCount} - ${teacherName}`,
           date: current.toISOString().split("T")[0]
         });
         sessionCount++;
@@ -108,4 +124,4 @@ router.get("/:rowIndex/schedule", async (req, res) => {
   }
 });
 
-module.exports = router; // ✅ Chỉ 1 lần export đúng cuối file
+module.exports = router;
